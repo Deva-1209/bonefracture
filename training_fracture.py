@@ -141,15 +141,35 @@ def trainPart(part):
     outputs = tf.keras.layers.Dense(2, activation='softmax')(x)
     model = tf.keras.Model(inputs, outputs)
     # print(model.summary())
-    print("-------Training " + part + "-------")
+   print(f"\n{'='*45}")
+    print(f"  Training model for: {part}")
+    print(f"  Train samples : {train_images.samples}")
+    print(f"  Val samples   : {val_images.samples}")
+    print(f"  Test samples  : {test_images.samples}")
+    print(f"{'='*45}\n")
 
-    # Adam optimizer with low learning rate for better accuracy
-    model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+    start_time = time.time()
 
-    # early stop when our model is over fit or vanishing gradient, with restore best values
-    callbacks = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
-    history = model.fit(train_images, validation_data=val_images, epochs=25, callbacks=[callbacks])
+    callbacks = [
+        tf.keras.callbacks.EarlyStopping(
+            monitor='val_loss', patience=3, restore_best_weights=True
+        ),
+        tf.keras.callbacks.CSVLogger(
+            THIS_FOLDER + f'/plots/FractureDetection/{part}/training_log.csv',
+            append=False
+        )
+    ]
 
+    history = model.fit(
+        train_images,
+        validation_data=val_images,
+        epochs=25,
+        callbacks=callbacks,
+        verbose=1
+    )
+
+    elapsed = time.time() - start_time
+    print(f"\n[{part}] Training completed in {elapsed/60:.1f} minutes")
     # save model to this path
     model.save(THIS_FOLDER + "/weights/ResNet50_" + part + "_frac.h5")
     results = model.evaluate(test_images, verbose=0)
