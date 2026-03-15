@@ -174,9 +174,18 @@ def trainPart(part):
     # save model to this path
     model.save(THIS_FOLDER + "/weights/ResNet50_" + part + "_frac.h5")
     results = model.evaluate(test_images, verbose=0)
-    print(part + " Results:")
-    print(results)
-    print(f"Test Accuracy: {np.round(results[1] * 100, 2)}%")
+    print(f"\n[{part}] Test Loss    : {results[0]:.4f}")
+    print(f"[{part}] Test Accuracy: {np.round(results[1] * 100, 2)}%")
+
+    # Save results summary
+    summary_path = THIS_FOLDER + f'/plots/FractureDetection/{part}/summary.txt'
+    os.makedirs(os.path.dirname(summary_path), exist_ok=True)
+    with open(summary_path, 'w') as f:
+        f.write(f"Part: {part}\n")
+        f.write(f"Test Loss: {results[0]:.4f}\n")
+        f.write(f"Test Accuracy: {np.round(results[1] * 100, 2)}%\n")
+        f.write(f"Training Time: {elapsed/60:.1f} minutes\n")
+        f.write(f"Epochs Run: {len(history.history['accuracy'])}\n")
 
     # create plots for accuracy and save it
     plt.plot(history.history['accuracy'])
