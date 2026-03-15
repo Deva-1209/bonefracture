@@ -79,10 +79,18 @@ def trainPart(part):
     # The resulting generators can then be used to train and evaluate a deep learning model.
 
     # now we have 10% test, 72% training and 18% validation
-    train_generator = tf.keras.preprocessing.image.ImageDataGenerator(horizontal_flip=True,
-                                                                      preprocessing_function=tf.keras.applications.resnet50.preprocess_input,
-                                                                      validation_split=0.2)
-
+   train_generator = tf.keras.preprocessing.image.ImageDataGenerator(
+        horizontal_flip=True,
+        vertical_flip=False,
+        rotation_range=10,
+        zoom_range=0.1,
+        width_shift_range=0.1,
+        height_shift_range=0.1,
+        brightness_range=[0.8, 1.2],
+        fill_mode='nearest',
+        preprocessing_function=tf.keras.applications.resnet50.preprocess_input,
+        validation_split=0.2
+    )
     # use ResNet50 architecture
     test_generator = tf.keras.preprocessing.image.ImageDataGenerator(
         preprocessing_function=tf.keras.applications.resnet50.preprocess_input)
