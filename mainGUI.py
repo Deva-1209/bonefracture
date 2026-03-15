@@ -69,6 +69,9 @@ class App(ctk.CTk):
         self.res2_label = ctk.CTkLabel(master=self.result_frame, text="")
         self.res2_label.pack(pady=5, padx=20)
 
+        self.res3_label = ctk.CTkLabel(master=self.result_frame, text="")
+        self.res3_label.pack(pady=5, padx=20)
+
         self.save_btn = ctk.CTkButton(master=self.result_frame, text="Save Result", command=self.save_result)
 
         self.save_label = ctk.CTkLabel(master=self.result_frame, text="")
@@ -91,21 +94,38 @@ class App(ctk.CTk):
         self.save_btn.pack_forget()
         self.save_label.pack_forget()
 
-    def predict_gui(self):
+   def predict_gui(self):
         global filename
+        if not filename:
+            self.res1_label.configure(text="Please upload an image first.",
+                                      text_color="ORANGE", font=(ctk.CTkFont("Roboto"), 16))
+            return
+
         bone_type_result = predict(filename)
         result = predict(filename, bone_type_result)
-        print(result)
+
         if result == 'fractured':
-            self.res2_label.configure(text_color="RED", text="Result: Fractured", font=(ctk.CTkFont("Roboto"), 24))
+            self.res2_label.configure(
+                text_color="RED", text="Result: Fractured",
+                font=(ctk.CTkFont("Roboto"), 24))
         else:
-            self.res2_label.configure(text_color="GREEN", text="Result: Normal", font=(ctk.CTkFont("Roboto"), 24))
+            self.res2_label.configure(
+                text_color="GREEN", text="Result: Normal",
+                font=(ctk.CTkFont("Roboto"), 24))
+
         bone_type_result = predict(filename, "Parts")
-        self.res1_label.configure(text="Type: " + bone_type_result, font=(ctk.CTkFont("Roboto"), 24))
-        print(bone_type_result)
+        self.res1_label.configure(
+            text="Type: " + bone_type_result,
+            font=(ctk.CTkFont("Roboto"), 24))
+
+        # Warn user if no image loaded but prediction attempted
+        self.res3_label.configure(
+            text="Note: Always consult a medical professional.",
+            text_color="GRAY", font=(ctk.CTkFont("Roboto"), 12))
+
         self.save_btn.pack(pady=10, padx=1)
         self.save_label.pack(pady=5, padx=20)
-
+       
     def save_result(self):
         tempdir = filedialog.asksaveasfilename(parent=self, initialdir=project_folder + '/PredictResults/',
                                                title='Please select a directory and filename', defaultextension=".png")
