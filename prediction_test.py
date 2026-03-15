@@ -38,9 +38,16 @@ categories_fracture = ['fractured', 'normal']
 
 
 def reportPredict(dataset):
-    total_count = 0
+    total_count = len(dataset)
     part_count = 0
     status_count = 0
+
+    confusion = {
+        'fractured_as_fractured': 0,
+        'fractured_as_normal': 0,
+        'normal_as_fractured': 0,
+        'normal_as_normal': 0
+    }
 
     print(Fore.YELLOW +
           '{0: <28}'.format('Name') +
@@ -48,25 +55,39 @@ def reportPredict(dataset):
           '{0: <20}'.format('Predicted Part') +
           '{0: <20}'.format('Status') +
           '{0: <20}'.format('Predicted Status'))
+
     for img in dataset:
         body_part_predict = predict(img['image_path'])
         fracture_predict = predict(img['image_path'], body_part_predict)
+
         if img['body_part'] == body_part_predict:
-            part_count = part_count + 1
+            part_count += 1
         if img['label'] == fracture_predict:
-            status_count = status_count + 1
+            status_count += 1
             color = Fore.GREEN
         else:
             color = Fore.RED
+
+        # confusion matrix tracking
+        key = f"{img['label']}_as_{fracture_predict}"
+        if key in confusion:
+            confusion[key] += 1
+
         print(color +
               '{0: <28}'.format(img['image_name']) +
               '{0: <14}'.format(img['body_part']) +
               '{0: <20}'.format(body_part_predict) +
-              '{0: <20}'.format((img['label'])) +
+              '{0: <20}'.format(img['label']) +
               '{0: <20}'.format(fracture_predict))
 
-    print(Fore.BLUE + '\npart acc: ' + str("%.2f" % (part_count / len(dataset) * 100)) + '%')
-    print(Fore.BLUE + 'status acc: ' + str("%.2f" % (status_count / len(dataset) * 100)) + '%')
+    print(Fore.BLUE + '\npart acc:   ' + str("%.2f" % (part_count / total_count * 100)) + '%')
+    print(Fore.BLUE + 'status acc: ' + str("%.2f" % (status_count / total_count * 100)) + '%')
+
+    print(Fore.CYAN + '\n--- Confusion Matrix ---')
+    print(Fore.GREEN + f"  fractured → correctly detected : {confusion['fractured_as_fractured']}")
+    print(Fore.RED   + f"  fractured → missed (as normal) : {confusion['fractured_as_normal']}")
+    print(Fore.RED   + f"  normal → false alarm (as fract): {confusion['normal_as_fractured']}")
+    print(Fore.GREEN + f"  normal → correctly detected    : {confusion['normal_as_normal']}")
     return
 
 
