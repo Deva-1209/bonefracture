@@ -134,6 +134,18 @@ outputs = tf.keras.layers.Dense(len(Labels), activation='softmax')(x)
 model = tf.keras.Model(inputs, outputs)
 print(model.summary())
 
+summary_path = THIS_FOLDER + '/weights/ResNet50_BodyParts_summary.txt'
+with open(summary_path, 'w') as f:
+    model.summary(print_fn=lambda x: f.write(x + '\n'))
+print(f"[Summary] Model summary saved to {summary_path}")
+
+# Log total vs trainable parameters
+total_params     = model.count_params()
+trainable_params = sum([tf.size(w).numpy() for w in model.trainable_weights])
+frozen_params    = total_params - trainable_params
+print(f"[Params] Total: {total_params:,} | Trainable: {trainable_params:,} | Frozen: {frozen_params:,}")
+print(model.summary())
+
 # Adam optimizer with low learning rate for better accuracy
 model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
 
