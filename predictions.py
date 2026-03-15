@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import tensorflow as tf
 # from keras.preprocessing import image
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
@@ -24,6 +25,13 @@ categories_fracture = ['fractured', 'normal']
 # otherwise - fracture predict for each part
 def predict(img, model="Parts"):
     size = 224
+    supported_models = ['Parts', 'Elbow', 'Hand', 'Shoulder']
+    if model not in supported_models:
+        raise ValueError(f"Invalid model '{model}'. Choose from {supported_models}")
+
+    if not os.path.exists(img):
+        raise FileNotFoundError(f"Image file not found: {img}")
+
     if model == 'Parts':
         chosen_model = model_parts
     else:
@@ -34,17 +42,19 @@ def predict(img, model="Parts"):
         elif model == 'Shoulder':
             chosen_model = model_shoulder_frac
 
-    # load image with 224px224p (the training model image size, rgb)
     temp_img = load_img(img, target_size=(size, size))
     x = img_to_array(temp_img)
     x = np.expand_dims(x, axis=0)
     images = np.vstack([x])
-    prediction = np.argmax(chosen_model.predict(images), axis=1)
 
-    # chose the category and get the string prediction
+    probabilities = chosen_model.predict(images)[0]
+    prediction_index = np.argmax(probabilities)
+    confidence = float(np.max(probabilities))
+
     if model == 'Parts':
-        prediction_str = categories_parts[prediction.item()]
+        prediction_str = categories_parts[prediction_index]
     else:
-        prediction_str = categories_fracture[prediction.item()]
+        prediction_str = categories_fracture[prediction_index]
 
+    print(f"[Prediction] Model: {model} | Result: {prediction_str} | Confidence: {confidence:.2%}")
     return prediction_str
